@@ -10,7 +10,6 @@ import com.lfg.lfg_backend.dto.AuthResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +48,8 @@ public class AuthService {
         userRepository.save(user);
 
         String token = jwtUtil.generateToken(user.getEmail());
-        return new AuthResponse(token);
+        // RESTITUISCI anche userId e username!
+        return new AuthResponse(token, user.getId(), user.getUsername());
     }
 
     public AuthResponse authenticate(LoginRequest request) {
@@ -69,12 +69,11 @@ public class AuthService {
             }
 
             String token = jwtUtil.generateToken(user.getEmail());
-            return new AuthResponse(token);
+            // RESTITUISCI anche userId e username!
+            return new AuthResponse(token, user.getId(), user.getUsername());
 
         } catch (Exception e) {
-            // Non rivelare dettagli (utente inesistente, password sbagliata, ecc.)
             throw new RuntimeException("Credenziali non valide");
         }
     }
 }
-

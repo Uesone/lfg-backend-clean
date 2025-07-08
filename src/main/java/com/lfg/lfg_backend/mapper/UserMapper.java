@@ -2,7 +2,11 @@ package com.lfg.lfg_backend.mapper;
 
 import com.lfg.lfg_backend.dto.UserDTO;
 import com.lfg.lfg_backend.dto.PublicUserProfileDTO;
+import com.lfg.lfg_backend.dto.UserDashboardDTO;
 import com.lfg.lfg_backend.model.User;
+
+import java.util.Collections;
+import java.util.List;
 
 public class UserMapper {
 
@@ -24,6 +28,7 @@ public class UserMapper {
     public static PublicUserProfileDTO toPublicDTO(User user, int level) {
         if (user == null) return null;
         return PublicUserProfileDTO.builder()
+                .id(user.getId()) // UUID!
                 .username(user.getUsername())
                 .city(user.getCity())
                 .bio(user.getBio())
@@ -34,5 +39,6 @@ public class UserMapper {
                 .build();
     }
 
-    // In futuro: puoi aggiungere toDashboardDTO(User user, ...) se serve.
+    // Se vuoi, puoi aggiungere in futuro anche:
+    // public static UserDashboardDTO toDashboardDTO(User user, ...) {...}
 }
