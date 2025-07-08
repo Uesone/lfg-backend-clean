@@ -61,6 +61,7 @@ public class UserService {
         int xpToNextLevel = ((level + 1) * 100) - xp;
 
         return UserDashboardDTO.builder()
+                .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .city(user.getCity())
