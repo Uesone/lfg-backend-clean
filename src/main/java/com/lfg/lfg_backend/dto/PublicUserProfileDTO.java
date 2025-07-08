@@ -11,7 +11,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PublicUserProfileDTO {
-    private UUID id;            // UUID!
     private String username;
     private String city;
     private String bio;

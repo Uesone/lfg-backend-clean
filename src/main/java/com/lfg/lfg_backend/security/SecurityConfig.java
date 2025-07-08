@@ -1,6 +1,5 @@
 package com.lfg.lfg_backend.security;
 
-import com.lfg.lfg_backend.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,15 +33,21 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        // === PUBLIC ENDPOINTS ===
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/events/**").permitAll()
+                        // PATCH: Consenti pubblico SOLO la rotta di profilo pubblico (MUST be before /users/**)
+                        .requestMatchers(HttpMethod.GET, "/users/*/profile").permitAll()
+                        // === PROTECTED ENDPOINTS ===
                         .requestMatchers(HttpMethod.POST, "/events/**").authenticated()
                         .requestMatchers("/join-requests/**", "/feedbacks/**", "/me", "/users/**").authenticated()
+                        // Any other route is protected by default
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider());
 
+        // Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -28,7 +28,6 @@ public class UserMapper {
     public static PublicUserProfileDTO toPublicDTO(User user, int level) {
         if (user == null) return null;
         return PublicUserProfileDTO.builder()
-                .id(user.getId()) // UUID!
                 .username(user.getUsername())
                 .city(user.getCity())
                 .bio(user.getBio())
