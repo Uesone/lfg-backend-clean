@@ -135,7 +135,8 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findAll(pageable).getContent().stream()
                 .filter(event -> !event.getCreator().getId().equals(user.getId()) &&
                         !excludedEventIds.contains(event.getId()) &&
-                        event.getDate().isAfter(LocalDate.now()))
+                        !event.getDate().isBefore(LocalDate.now())
+                )
                 .map(event -> {
                     int score = 0;
                     int creatorLevel = feedbackService.calculateReputation(event.getCreator()).level();
