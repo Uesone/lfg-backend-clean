@@ -38,12 +38,15 @@ public class EventMapper {
                 event.getId(),
                 event.getTitle(),
                 event.getActivityType(),
-                event.getCity(),
+                event.getLocation(),
                 event.getDate(),
                 event.getMaxParticipants(),
                 event.getCreator() != null ? event.getCreator().getId() : null,
                 event.getCreator() != null ? event.getCreator().getUsername() : null,
-                creatorLevel
+                creatorLevel,
+                event.getLatitude(),        // <--- NEW
+                event.getLongitude()        // <--- NEW
         );
     }
+
 }

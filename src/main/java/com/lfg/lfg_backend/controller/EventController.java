@@ -67,7 +67,10 @@ public class EventController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<String> deleteEvent(@PathVariable UUID id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<String> deleteEvent(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
         String email = userDetails.getUser().getEmail();
         eventService.deleteEvent(id, email);
         return ResponseEntity.ok("Evento eliminato con successo.");
@@ -105,14 +108,22 @@ public class EventController {
 
     // === 🟨 EXTRA ===
 
+    /**
+     * Feed geo-based: mostra eventi vicino a lat/lon dell'utente (raggio in km)
+     */
     @GetMapping("/feed")
     @PreAuthorize("isAuthenticated()")
     public List<EventFeedDTO> getEventFeed(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lon,
+            @RequestParam(defaultValue = "25") Double radiusKm
     ) {
-        return eventService.getSuggestedEventsForUser(userDetails.getUser(), page, size);
+        return eventService.getSuggestedEventsForUser(
+                userDetails.getUser(), page, size, lat, lon, radiusKm
+        );
     }
 
     @GetMapping("/public")
@@ -124,7 +135,9 @@ public class EventController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        List<EventSummaryDTO> events = eventService.getPublicEvents(city, activity, after, sortBy, page, size);
+        List<EventSummaryDTO> events = eventService.getPublicEvents(
+                city, activity, after, sortBy, page, size
+        );
         return ResponseEntity.ok(events);
     }
 }

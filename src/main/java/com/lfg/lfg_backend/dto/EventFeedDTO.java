@@ -3,7 +3,6 @@ package com.lfg.lfg_backend.dto;
 import java.time.LocalDate;
 import java.util.UUID;
 
-
 public record EventFeedDTO(
         UUID id,
         String title,
@@ -13,5 +12,7 @@ public record EventFeedDTO(
         int maxParticipants,
         UUID creatorId,
         String creatorUsername,
-        int creatorLevel
+        int creatorLevel,
+        Double latitude,         // <--- NEW
+        Double longitude         // <--- NEW
 ) {}

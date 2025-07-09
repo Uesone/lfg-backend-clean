@@ -56,6 +56,8 @@ public class EventServiceImpl implements EventService {
                         : com.lfg.lfg_backend.model.enums.JoinMode.AUTO)
                 .creator(creator)
                 .createdAt(LocalDateTime.now())
+                .latitude(eventDTO instanceof EventCreateDTO && eventDTO.getLatitude() != null ? eventDTO.getLatitude() : null)
+                .longitude(eventDTO instanceof EventCreateDTO && eventDTO.getLongitude() != null ? eventDTO.getLongitude() : null)
                 .build();
 
         Event saved = eventRepository.save(event);
@@ -85,6 +87,7 @@ public class EventServiceImpl implements EventService {
         if (updateDTO.getNotes() != null) event.setNotes(updateDTO.getNotes());
         if (updateDTO.getJoinMode() != null) event.setJoinMode(updateDTO.getJoinMode());
         if (updateDTO.getMaxParticipants() > 0) event.setMaxParticipants(updateDTO.getMaxParticipants());
+        // Puoi aggiungere qui latitude/longitude quando aggiungi nel DTO
 
         eventRepository.save(event);
     }
@@ -123,8 +126,19 @@ public class EventServiceImpl implements EventService {
         return EventMapper.toDetailsDTO(event);
     }
 
-    @Override
-    public List<EventFeedDTO> getSuggestedEventsForUser(User user, int page, int size) {
+    /**
+     * Feed suggerito all'utente, con filtro distanza opzionale.
+     * NB: In questa versione future-proof il metodo ha la firma geo.
+     *     Puoi overloadare o sostituire nell'interfaccia quando vuoi esporre questa versione.
+     */
+    public List<EventFeedDTO> getSuggestedEventsForUser(
+            User user,
+            int page,
+            int size,
+            Double lat,         // Latitudine utente (può essere null)
+            Double lon,         // Longitudine utente (può essere null)
+            Double radiusKm     // Raggio ricerca (default 25 km)
+    ) {
         Pageable pageable = PageRequest.of(page, size);
         List<UUID> excludedEventIds = joinRequestRepository.findByUserId(user.getId()).stream()
                 .map(jr -> jr.getEvent().getId())
@@ -132,11 +146,19 @@ public class EventServiceImpl implements EventService {
         Set<String> userActivities = joinRequestRepository.findByUserId(user.getId()).stream()
                 .map(jr -> jr.getEvent().getActivityType())
                 .collect(Collectors.toSet());
+
         return eventRepository.findAll(pageable).getContent().stream()
                 .filter(event -> !event.getCreator().getId().equals(user.getId()) &&
                         !excludedEventIds.contains(event.getId()) &&
                         !event.getDate().isBefore(LocalDate.now())
                 )
+                .filter(event -> {
+                    // --- FILTRO DISTANZA GEO ---
+                    if (lat == null || lon == null || event.getLatitude() == null || event.getLongitude() == null)
+                        return true; // Nessun filtro se dati non disponibili
+                    double distance = haversine(lat, lon, event.getLatitude(), event.getLongitude());
+                    return distance <= (radiusKm != null ? radiusKm : 25.0);
+                })
                 .map(event -> {
                     int score = 0;
                     int creatorLevel = feedbackService.calculateReputation(event.getCreator()).level();
@@ -152,14 +174,35 @@ public class EventServiceImpl implements EventService {
                 .map(entry -> {
                     Event e = entry.getKey();
                     int level = feedbackService.calculateReputation(e.getCreator()).level();
-                    EventFeedDTO dto = EventMapper.toFeedDTO(e, level);
-                    return new EventFeedDTO(
-                            dto.id(), dto.title(), dto.activityType(), dto.location(), dto.date(),
-                            dto.maxParticipants(), dto.creatorId(), dto.creatorUsername(), level
-                    );
+                    return EventMapper.toFeedDTO(e, level);
                 })
                 .collect(Collectors.toList());
     }
+
+    // --- Versione attuale compatibile (senza geo, chiama la versione avanzata senza filtri) ---
+    @Override
+    public List<EventFeedDTO> getSuggestedEventsForUser(User user, int page, int size) {
+        // Se vuoi subito geolocalizzazione dal DB utente, puoi passarla qui:
+        // return getSuggestedEventsForUser(user, page, size, user.getLatitude(), user.getLongitude(), 25.0);
+        // Per ora lasciamo null per compatibilità:
+        return getSuggestedEventsForUser(user, page, size, null, null, 25.0);
+    }
+
+    /**
+     * Haversine formula per calcolo distanza tra due coordinate geografiche (in km)
+     */
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371; // Raggio terra in km
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon/2) * Math.sin(dLon/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    // --- RESTO CODICE COME PRIMA ---
 
     @Override
     public List<UserDTO> getEventParticipants(UUID eventId) {

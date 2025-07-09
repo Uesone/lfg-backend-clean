@@ -25,4 +25,7 @@ public class EventCreateDTO {
     private int maxParticipants;
 
     private String joinMode; // "AUTO" o "MANUAL"
+
+    private Double latitude;   // <--- NEW: Latitudine evento (opzionale)
+    private Double longitude;  // <--- NEW: Longitudine evento (opzionale)
 }
