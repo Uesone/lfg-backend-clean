@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -27,4 +29,6 @@ public class EventDetailsDTO {
     private int maxParticipants;
     private String joinMode;
     private String creatorUsername;
+    private Set<String> tags;
+
 }

@@ -1,5 +1,5 @@
 package com.lfg.lfg_backend.dto;
-
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +17,5 @@ public class EventSummaryDTO {
     private String activityType;
     private String city;
     private LocalDate date;
+    private Set<String> tags;
 }

@@ -36,8 +36,9 @@ public class SecurityConfig {
                         // === PUBLIC ENDPOINTS ===
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/events/**").permitAll()
-                        // PATCH: Consenti pubblico SOLO la rotta di profilo pubblico (MUST be before /users/**)
                         .requestMatchers(HttpMethod.GET, "/users/*/profile").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/tags").permitAll()     // <-- PATCH: Consenti GET /tags
+                        .requestMatchers(HttpMethod.GET, "/tags/").permitAll()    // <-- PATCH: fallback con slash finale
                         // === PROTECTED ENDPOINTS ===
                         .requestMatchers(HttpMethod.POST, "/events/**").authenticated()
                         .requestMatchers("/join-requests/**", "/feedbacks/**", "/me", "/users/**").authenticated()

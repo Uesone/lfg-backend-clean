@@ -1,12 +1,16 @@
 package com.lfg.lfg_backend.mapper;
 
+
 import com.lfg.lfg_backend.dto.*;
 import com.lfg.lfg_backend.model.Event;
+
+import java.util.Set;
 
 /**
  * Mapper per conversione tra entità Event e i vari DTO usati per API e privacy.
  * - Feed: SOLO città (mai location)
  * - Dettaglio: location visibile solo se autorizzato (gestito a livello service/controller)
+ * - Tags: ora inclusi in tutti i DTO!
  */
 public class EventMapper {
 
@@ -22,6 +26,7 @@ public class EventMapper {
                 .activityType(event.getActivityType())
                 .city(event.getCity())
                 .date(event.getDate())
+                .tags(event.getTags()) // <-- aggiunto!
                 .build();
     }
 
@@ -44,6 +49,7 @@ public class EventMapper {
                 .maxParticipants(event.getMaxParticipants())
                 .joinMode(event.getJoinMode() != null ? event.getJoinMode().name() : null)
                 .creatorUsername(event.getCreator() != null ? event.getCreator().getUsername() : null)
+                .tags(event.getTags()) // <-- aggiunto!
                 .build();
     }
 
@@ -63,7 +69,8 @@ public class EventMapper {
                 event.getCreator() != null ? event.getCreator().getId() : null,
                 event.getCreator() != null ? event.getCreator().getUsername() : null,
                 creatorLevel,
-                null // distanzaFromUser non presente in questa variante
+                null, // distanzaFromUser non presente in questa variante
+                event.getTags() // <-- aggiunto!
         );
     }
 
@@ -83,7 +90,41 @@ public class EventMapper {
                 event.getCreator() != null ? event.getCreator().getId() : null,
                 event.getCreator() != null ? event.getCreator().getUsername() : null,
                 creatorLevel,
-                distanceFromUser // distanza in km, opzionale, solo se geo attiva
+                distanceFromUser, // distanza in km, opzionale, solo se geo attiva
+                event.getTags() // <-- aggiunto!
         );
     }
+
+    /**
+     * Mapping da DTO di creazione evento a entità Event (usalo in create).
+     */
+    public static void updateEventFromCreateDTO(Event event, EventCreateDTO dto) {
+        event.setTitle(dto.getTitle());
+        event.setActivityType(dto.getActivityType());
+        event.setLocation(dto.getLocation());
+        event.setCity(dto.getCity());
+        event.setNotes(dto.getNotes());
+        event.setDate(dto.getDate());
+        event.setMaxParticipants(dto.getMaxParticipants());
+        // joinMode va gestito a parte se necessario
+        event.setLatitude(dto.getLatitude());
+        event.setLongitude(dto.getLongitude());
+        event.setTags(dto.getTags()); // <-- aggiunto!
+    }
+
+    /**
+     * Mapping da DTO di update evento a entità Event (usalo in update).
+     */
+    public static void updateEventFromUpdateDTO(Event event, EventUpdateDTO dto) {
+        if (dto.getTitle() != null) event.setTitle(dto.getTitle());
+        if (dto.getActivityType() != null) event.setActivityType(dto.getActivityType());
+        if (dto.getLocation() != null) event.setLocation(dto.getLocation());
+        if (dto.getCity() != null) event.setCity(dto.getCity());
+        if (dto.getNotes() != null) event.setNotes(dto.getNotes());
+        if (dto.getDate() != null) event.setDate(dto.getDate());
+        if (dto.getMaxParticipants() > 0) event.setMaxParticipants(dto.getMaxParticipants());
+        if (dto.getJoinMode() != null) event.setJoinMode(dto.getJoinMode());
+        if (dto.getTags() != null) event.setTags(dto.getTags()); // <-- aggiunto!
+    }
+
 }

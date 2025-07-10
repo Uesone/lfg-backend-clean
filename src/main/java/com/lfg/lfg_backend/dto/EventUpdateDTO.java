@@ -1,4 +1,5 @@
 package com.lfg.lfg_backend.dto;
+import java.util.Set;
 
 import com.lfg.lfg_backend.model.enums.JoinMode;
 import jakarta.validation.constraints.Future;
@@ -39,4 +40,5 @@ public class EventUpdateDTO {
     private int maxParticipants;
 
     private JoinMode joinMode;
+    private Set<String> tags;
 }

@@ -14,6 +14,7 @@ import com.lfg.lfg_backend.repository.UserRepository;
 import com.lfg.lfg_backend.service.EventService;
 import com.lfg.lfg_backend.service.FeedbackService;
 import com.lfg.lfg_backend.service.UserService;
+import com.lfg.lfg_backend.util.EventTagWhitelist; // <-- IMPORTANTE: Importa la whitelist dei tag
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,10 +27,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Implementazione di EventService con privacy by design:
+ * Implementazione di EventService con privacy by design e validazione dei tag predefiniti.
  * - Feed mostra solo la città
  * - Dettaglio evento mostra indirizzo solo se utente autorizzato
  * - Supporto geo-based feed (raggio ricerca e distanza)
+ * - Solo i tag della whitelist possono essere salvati/aggiornati su eventi
  */
 @Service
 @RequiredArgsConstructor
@@ -41,6 +43,21 @@ public class EventServiceImpl implements EventService {
     private final FeedbackService feedbackService;
     private final UserService userService;
 
+    /**
+     * Valida che tutti i tag inseriti siano nella whitelist (case-insensitive).
+     * Lancia IllegalArgumentException se ne trova uno non valido.
+     */
+    private void validateTags(Set<String> tags) {
+        if (tags == null) return; // Nessun tag da validare
+        Set<String> allowedLower = EventTagWhitelist.ALLOWED_TAGS
+                .stream().map(String::toLowerCase).collect(Collectors.toSet());
+        for (String tag : tags) {
+            if (!allowedLower.contains(tag.toLowerCase())) {
+                throw new IllegalArgumentException("Tag non valido: " + tag);
+            }
+        }
+    }
+
     @Override
     public EventDetailsDTO createEvent(EventCreateDTO eventDTO, String creatorEmail) {
         User creator = userRepository.findByEmail(creatorEmail)
@@ -49,6 +66,9 @@ public class EventServiceImpl implements EventService {
         if (userService.isUserBanned(creator)) {
             throw new SecurityException("Il tuo account è sospeso fino al " + creator.getBannedUntil());
         }
+
+        // === Validazione tag predefiniti ===
+        validateTags(eventDTO.getTags());
 
         Event event = Event.builder()
                 .title(eventDTO.getTitle())
@@ -65,6 +85,7 @@ public class EventServiceImpl implements EventService {
                 .createdAt(LocalDateTime.now())
                 .latitude(eventDTO.getLatitude() != null ? eventDTO.getLatitude() : null)
                 .longitude(eventDTO.getLongitude() != null ? eventDTO.getLongitude() : null)
+                .tags(eventDTO.getTags()) // <-- Salva i tag
                 .build();
 
         Event saved = eventRepository.save(event);
@@ -86,6 +107,12 @@ public class EventServiceImpl implements EventService {
 
         if (!event.getCreator().getId().equals(user.getId())) {
             throw new SecurityException("Non sei il creatore dell'evento");
+        }
+
+        // === Validazione tag predefiniti SOLO se presenti nell'updateDTO ===
+        if (updateDTO.getTags() != null) {
+            validateTags(updateDTO.getTags());
+            event.setTags(updateDTO.getTags());
         }
 
         if (updateDTO.getTitle() != null) event.setTitle(updateDTO.getTitle());

@@ -3,7 +3,8 @@ package com.lfg.lfg_backend.model;
 import com.lfg.lfg_backend.model.enums.JoinMode;
 import jakarta.persistence.*;
 import lombok.*;
-
+import java.util.Set;
+import java.util.HashSet;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -44,6 +45,11 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     private JoinMode joinMode;
+
+    @ElementCollection
+    @CollectionTable(name = "event_tags", joinColumns = @JoinColumn(name = "event_id"))
+    @Column(name = "tag")
+    private Set<String> tags = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "creator_id")

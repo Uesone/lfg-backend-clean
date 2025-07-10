@@ -1,4 +1,5 @@
 package com.lfg.lfg_backend.dto;
+import java.util.Set;
 
 import lombok.Data;
 import jakarta.validation.constraints.*;
@@ -22,6 +23,9 @@ public class EventCreateDTO {
     private String city;      // <-- AGGIUNTO!
 
     private String notes;
+
+
+    private Set<String> tags;
 
     @NotNull
     private LocalDate date;

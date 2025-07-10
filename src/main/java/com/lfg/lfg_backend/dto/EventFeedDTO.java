@@ -1,5 +1,5 @@
 package com.lfg.lfg_backend.dto;
-
+import java.util.Set;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -21,5 +21,7 @@ public record EventFeedDTO(
         UUID creatorId,
         String creatorUsername,
         int creatorLevel,
-        Double distanceFromUser     // <-- Distanza in km (opzionale, solo se richiesta dal backend)
+        Double distanceFromUser,    // <-- Distanza in km (opzionale, solo se richiesta dal backend)
+        Set<String> tags
+
 ) {}
