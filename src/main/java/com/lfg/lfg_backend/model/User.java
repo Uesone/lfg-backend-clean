@@ -48,7 +48,7 @@ public class User {
     @Column(name = "banned_until")
     private LocalDateTime bannedUntil;
 
-    //geolocalizzazione
+    // Geolocalizzazione
     @Column(name = "latitude")
     private Double latitude;
 

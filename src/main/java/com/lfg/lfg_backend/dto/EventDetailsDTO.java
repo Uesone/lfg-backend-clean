@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.util.UUID;
 
+/**
+ * DTO dettagliato di un evento (controlla privacy su location!).
+ */
 @Data
 @Builder
 @AllArgsConstructor
@@ -17,8 +20,8 @@ public class EventDetailsDTO {
     private UUID creatorID;
     private String title;
     private String activityType;
-    private String location;
-    private String city;
+    private String location;   // indirizzo completo (VISIBILE solo se autorizzato)
+    private String city;       // città evento (sempre visibile)
     private String notes;
     private LocalDate date;
     private int maxParticipants;

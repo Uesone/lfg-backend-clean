@@ -11,7 +11,6 @@ import java.util.UUID;
  * Service per la gestione degli eventi e feed (anche geo-based)
  */
 public interface EventService {
-
     // === BASE CRUD ===
 
     EventDetailsDTO createEvent(EventCreateDTO eventDTO, String creatorEmail);
@@ -26,19 +25,12 @@ public interface EventService {
 
     // === FEED EVENTS ===
 
-    /**
-     * Feed classico, compatibilità vecchio frontend.
-     */
     List<EventFeedDTO> getSuggestedEventsForUser(
             User user,
             int page,
             int size
     );
 
-    /**
-     * Feed geo-based: consigliato per il futuro.
-     * Può essere usato anche senza parametri geo (lat/lon/radius null).
-     */
     List<EventFeedDTO> getSuggestedEventsForUser(
             User user,
             int page,
@@ -47,6 +39,14 @@ public interface EventService {
             Double lon,
             Double radiusKm
     );
+
+    /**
+     * Feed geo-based con filtro raggio dalla posizione dell’utente loggato.
+     * Default: usa getSuggestedEventsForUser con parametri da user.
+     */
+    default List<EventFeedDTO> getEventsWithinRadius(User user, Double radiusKm) {
+        return getSuggestedEventsForUser(user, 0, 20, user.getLatitude(), user.getLongitude(), radiusKm != null ? radiusKm : 25.0);
+    }
 
     // === RELAZIONI ===
 

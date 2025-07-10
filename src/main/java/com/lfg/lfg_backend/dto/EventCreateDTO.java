@@ -5,6 +5,9 @@ import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
+/**
+ * DTO per la creazione di un nuovo evento.
+ */
 @Data
 public class EventCreateDTO {
     @NotBlank
@@ -16,6 +19,8 @@ public class EventCreateDTO {
     @NotBlank
     private String location;
 
+    private String city;      // <-- AGGIUNTO!
+
     private String notes;
 
     @NotNull
@@ -26,6 +31,6 @@ public class EventCreateDTO {
 
     private String joinMode; // "AUTO" o "MANUAL"
 
-    private Double latitude;   // <--- NEW: Latitudine evento (opzionale)
-    private Double longitude;  // <--- NEW: Longitudine evento (opzionale)
+    private Double latitude;   // Latitudine evento (opzionale)
+    private Double longitude;  // Longitudine evento (opzionale)
 }

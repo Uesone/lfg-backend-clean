@@ -43,6 +43,10 @@ public class EventController {
         return eventService.getAllEvents();
     }
 
+    /**
+     * Dettaglio evento: location mostrata solo a creator o APPROVATI.
+     * Il service restituisce automaticamente il DTO corretto.
+     */
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Object> getEventView(
@@ -106,11 +110,8 @@ public class EventController {
         return ResponseEntity.ok(response);
     }
 
-    // === 🟨 EXTRA ===
+    // === 🟨 FEED GEO-BASED ===
 
-    /**
-     * Feed geo-based: mostra eventi vicino a lat/lon dell'utente (raggio in km)
-     */
     @GetMapping("/feed")
     @PreAuthorize("isAuthenticated()")
     public List<EventFeedDTO> getEventFeed(
@@ -121,6 +122,11 @@ public class EventController {
             @RequestParam(required = false) Double lon,
             @RequestParam(defaultValue = "25") Double radiusKm
     ) {
+        // Usa posizione da parametri se presente, altrimenti prendi dal profilo utente
+        if (lat == null || lon == null) {
+            lat = userDetails.getUser().getLatitude();
+            lon = userDetails.getUser().getLongitude();
+        }
         return eventService.getSuggestedEventsForUser(
                 userDetails.getUser(), page, size, lat, lon, radiusKm
         );
